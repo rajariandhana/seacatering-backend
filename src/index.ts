@@ -20,8 +20,9 @@ async function init() {
         app.use(cors());
         app.use(bodyParser.json());
 
-        dotenv.config();
-        const PORT = process.env.PORT;
+        // dotenv.config();
+        // const PORT = process.env.PORT;
+        const PORT = 3000;
         app.get("/",(req,res)=>{
             res.status(200).json({
                 message:"Server is running",
