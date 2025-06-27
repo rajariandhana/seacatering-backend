@@ -1,6 +1,5 @@
 import { Request, Response } from "express";
 import * as Yup from "yup";
-
 import SubscriptionModel from "../models/subscription.model";
 
 type SubscriptionForm = {
@@ -53,7 +52,7 @@ const plans=[
 ];
 
 export default {
-  async subscribe(req:Request, res:Response){
+  async create(req:Request, res:Response){
     const {name,phoneNumber,planKey,mealType,deliveryDays,allergies,notes} = req.body as unknown as SubscriptionForm;
     try {
       // console.log(name,phoneNumber,planKey,mealType,deliveryDays,allergies,notes);
