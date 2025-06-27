@@ -3,6 +3,7 @@ import express from 'express';
 import authController from '../controllers/auth.controller';
 import dummyController from '../controllers/dummy.controller';
 import subscriptionController from '../controllers/subscription.controller';
+import testimonialController from '../controllers/testimonial.controller';
 
 import authMiddleware from '../middleware/auth.middleware';
 
@@ -13,6 +14,9 @@ router.post('/auth/register', authController.register);
 router.post('/auth/login', authController.login);
 router.get('/auth/me', authMiddleware, authController.me);
 router.post('/auth/activation', authController.activation);
-router.post('/subscription/subscribe', subscriptionController.subscribe);
+
+router.post('/subscription/create', subscriptionController.create);
+
+router.post('/testimonial/create', testimonialController.create);
 
 export default router;
