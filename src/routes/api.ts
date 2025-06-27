@@ -18,6 +18,7 @@ router.post('/auth/activation', authController.activation);
 
 router.post('/subscription/create', subscriptionController.create);
 
+router.get('/testimonial/find-all', testimonialController.findAll);
 router.post('/testimonial/create', testimonialController.create);
 
 router.get('/plan/find-all', planController.findAll);
