@@ -1,6 +1,5 @@
 import { Request, Response } from "express";
 import * as Yup from "yup";
-
 import SubscriptionModel from "../models/subscription.model";
 
 type SubscriptionForm = {
