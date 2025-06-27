@@ -10,6 +10,8 @@ import docs from "./docs/route";
 
 import cors from "cors";
 
+import dotenv from "dotenv";
+
 async function init() {
     try {
         const result = await db();
@@ -18,7 +20,8 @@ async function init() {
         app.use(cors());
         app.use(bodyParser.json());
 
-        const PORT = 3000;
+        dotenv.config();
+        const PORT = process.env.PORT;
         app.get("/",(req,res)=>{
             res.status(200).json({
                 message:"Server is running",
