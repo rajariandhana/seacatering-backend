@@ -1,9 +1,9 @@
 import { Request, Response } from "express";
 import * as Yup from "yup";
 import SubscriptionModel from "../models/subscription.model";
+import { IReqUser } from "../middleware/auth.middleware";
 
 type SubscriptionForm = {
-  name:string;
   phoneNumber:string;
   planKey:string;
   mealType:string[];
@@ -27,7 +27,6 @@ const validWeekdays = [
 ];
 
 const subscriptionValidateSchema=Yup.object({
-  name:Yup.string().required(),
   phoneNumber:Yup.string().matches(/^\d+$/).required(),
   planKey:Yup.string().required(),
   mealType: Yup.array().of(Yup.string().oneOf(mealType, 'Invalid meal type')).min(1).max(3).required(),
@@ -52,12 +51,12 @@ const plans=[
 ];
 
 export default {
-  async create(req:Request, res:Response){
-    const {name,phoneNumber,planKey,mealType,deliveryDays,allergies,notes} = req.body as unknown as SubscriptionForm;
+  async create(req:IReqUser, res:Response){
+    const {phoneNumber,planKey,mealType,deliveryDays,allergies,notes} = req.body as unknown as SubscriptionForm;
     try {
-      // console.log(name,phoneNumber,planKey,mealType,deliveryDays,allergies,notes);
+      // console.log(phoneNumber,planKey,mealType,deliveryDays,allergies,notes);
       await subscriptionValidateSchema.validate({
-        name,phoneNumber,planKey,mealType,deliveryDays,allergies,notes
+        phoneNumber,planKey,mealType,deliveryDays,allergies,notes
       })
 
       const plan = plans.find(p=>p.key===planKey);
@@ -66,8 +65,14 @@ export default {
       }
       const totalPrice = plan.price * mealType.length * deliveryDays.length * 4.3;
 
+      // console.log(req.user);
+      const userId = req.user?.id;
+      if (!userId) {
+        return res.status(401).json({ message: 'Unauthorized. User ID not found.' });
+      }
+
       const result = await SubscriptionModel.create({
-        name,phoneNumber,planKey,mealType,deliveryDays,allergies,notes, totalPrice
+        userId, phoneNumber,planKey,mealType,deliveryDays,allergies,notes, totalPrice
       });
       // console.log("You have subscribed!")
       res.status(200).json({

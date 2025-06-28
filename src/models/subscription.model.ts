@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 
 export interface Subscription {
-  name:string;
+  userId: mongoose.Types.ObjectId;
   phoneNumber:string;
   planKey:string;
   mealType:string[];
@@ -14,9 +14,10 @@ export interface Subscription {
 
 const Schema = mongoose.Schema;
 const SubscriptionSchema = new Schema<Subscription>({
-  name:{
-    type: String,
-    required:true,
+  userId:{
+    type: Schema.Types.ObjectId,
+    ref: "User",
+    required: true,
   },
   phoneNumber:{
     type: String,

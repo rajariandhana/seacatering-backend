@@ -4,7 +4,7 @@ import jwt from "jsonwebtoken";
 import { SECRET } from "./env";
 
 // extend from class user but without all required properties
-export interface IUserToken extends Omit<User,"password"|"activationCode"|"isActive"|"email"|"fullName"|"profilePicture"|"username">{
+export interface IUserToken extends Omit<User,"password"|"email"|"fullName">{
     id?: Types.ObjectId;
 }
 

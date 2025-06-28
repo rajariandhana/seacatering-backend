@@ -9,56 +9,68 @@ import {IReqUser} from "../middleware/auth.middleware";
 
 type TRegister = {
     fullName: string;
-    username: string;
     email: string;
     password: string;
     confirmPassword: string;
 };
 
 type TLogin = {
-    identifier: string;
+    email: string;
     password: string;
 };
 
 const registerValidateSchema = Yup.object({
     fullName: Yup.string().required(),
-    username: Yup.string().required(),
     email: Yup.string().required(),
-    password: Yup.string().required().min(6,"Password must be at least 6 characters")
-        .test("at-least-one-uppercase-letter","Contains at least one uppercase letter",
-            (value)=>{
-                if(!value) return false;
-                const regex = /^(?=.*[A-Z])/
-                return regex.test(value);
+    password: Yup.string()
+        .required()
+        .min(8, "Password must be at least 8 characters")
+        .test(
+            "at-least-one-uppercase-letter",
+            "Password must contain at least one uppercase letter",
+            (value) => {
+                if (!value) return false;
+                return /[A-Z]/.test(value);
             }
-        ).test("at-least-one-number-letter","Contains at least one number letter",
-            (value)=>{
-                if(!value) return false;
-                const regex = /^(?=.*\d)/
-                return regex.test(value);
+        )
+        .test(
+            "at-least-one-number",
+            "Password must contain at least one number",
+            (value) => {
+                if (!value) return false;
+                return /\d/.test(value);
+            }
+        )
+        .test(
+            "at-least-one-special-char",
+            "Password must contain at least one special character",
+            (value) => {
+                if (!value) return false;
+                return /[!@#$%^&*(),.?":{}|<>]/.test(value);
             }
         ),
-    confirmPassword: Yup.string().required().oneOf([Yup.ref("password"),""], "Password not match"),
-})
+    confirmPassword: Yup.string()
+        .required()
+        .oneOf([Yup.ref("password"), ""], "Passwords do not match"),
+});
+
 
 export default {
     async register(req: Request, res: Response) {
-        const {fullName, username, email, password, confirmPassword} = req.body as unknown as TRegister;
+        const {fullName, email, password, confirmPassword} = req.body as unknown as TRegister;
         try {
             await registerValidateSchema.validate({
-                fullName, username, email, password, confirmPassword
+                fullName, email, password, confirmPassword
             });
 
             const result = await UserModel.create({
-                fullName, username, email, password
+                fullName, email, password
             });
 
             res.status(200).json({
                 message:'Success registration!',
                 data: result
             })
-
-
 
         } catch (error) {
             const err = error as unknown as Error;
@@ -70,47 +82,35 @@ export default {
     },
 
     async login(req: Request, res: Response) {
-        /**
-         #swagger.requestBody = {
-            required: true,
-            schema: {$ref: "#/components/schemas/LoginRequest"}
-         }
-         */
-        const {identifier, password} = req.body as unknown as TLogin;
+        // console.log("HEREERERE 1");
+        const {email, password} = req.body as unknown as TLogin;
         try {
-            // fetch user data according to "identifier" -> email or username
-            const userByIdentifier = await UserModel.findOne({
-
-                $or:[
-                    {
-                        email: identifier,
-                    },
-                    {
-                        username: identifier,
-                    }
-                ],
-                isActive:true
+            const userByEmail = await UserModel.findOne({
+                email:email
             });
-            if(!userByIdentifier){
+            if(!userByEmail){
                 return res.status(403).json({
                     message:"User not found",
                     data: null
                 });
             }
+            // console.log("HEREERERE 2");
 
             // validate hashed password match with db password
-            const validatePassword: boolean = encrypt(password) === userByIdentifier.password;
+            const validatePassword: boolean = encrypt(password) === userByEmail.password;
             if(!validatePassword) {
                 return res.status(403).json({
                     message:"Incorrect password",
                     data: null
                 });
             }
+            // console.log("HEREERERE 3");
 
             const token = generateToken({
-                id: userByIdentifier._id,
-                role: userByIdentifier.role,
+                id: userByEmail._id,
+                role: userByEmail.role,
             });
+            // console.log("HEREERERE 4");
             
             res.status(200).json({
                 message: "Login success",
@@ -127,49 +127,15 @@ export default {
     },
 
     async me(req: IReqUser, res: Response) {
-        /**
-         #swagger.security = [{
-            "bearerAuth": []
-         }]
-         */
         try {
             const user = req.user;
             const result = await UserModel.findById(user?.id);
+            console.log("found",result);
 
             res.status(200).json({
                 message:"Success get user profile",
                 data: result
             });
-        } catch (error) {
-            const err = error as unknown as Error;
-            res.status(400).json({
-                message: err.message,
-                data: null
-            })
-        }
-    },
-
-    async activation(req:Request, res:Response) {
-        /**
-         #swagger.tags = ['Auth']
-         #swagger.requestBody = {
-            required: true,
-            schema: {$ref: "#/components/schemas/ActivationRequest"}
-         }
-         */
-        try {
-            const {code} = req.body as {code: string};
-            const user = await UserModel.findOneAndUpdate({
-                activationCode:code
-            },{
-                isActive:true
-            },{
-                new:true
-            });
-            res.status(200).json({
-                message:"User successfully activated",
-                data:user,
-            })
         } catch (error) {
             const err = error as unknown as Error;
             res.status(400).json({
