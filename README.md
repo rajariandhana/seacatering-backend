@@ -7,3 +7,5 @@ npm i @types/express@4.17.21
 ```
 
 stupid ass dont forget when deploying in vercel, go to mongodb cluster and set allow ip from any (or better put the frontend/backend ip/domain idk havent tried this one)
+
+user 1:1 subscription

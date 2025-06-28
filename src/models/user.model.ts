@@ -1,4 +1,4 @@
-import mongoose from "mongoose";
+import mongoose, { Types } from "mongoose";
 import { encrypt } from "../utils/encryption";
 import { ROLES } from "../utils/constant";
 
@@ -7,6 +7,7 @@ export interface User {
     email: string;
     password: string;
     role: string;
+    subscriptionId?:Types.ObjectId;
     createdAt?: string;
 }
 const Schema = mongoose.Schema;
@@ -29,6 +30,12 @@ const UserSchema = new Schema<User>({
         enum: [ROLES.ADMIN,ROLES.MEMBER],
         default: ROLES.MEMBER,
     },
+    subscriptionId:{
+        type: Schema.Types.ObjectId,
+        ref:"Subscription",
+        unique:true,
+        sparse:true,
+    }
 },{
     timestamps: true,
 });

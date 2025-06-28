@@ -21,7 +21,10 @@ router.post('/auth/login', authController.login);
 router.get('/auth/me', authMiddleware, authController.me);
 
 // router.post('/subscription/create', subscriptionController.create);
-router.post('/subscription/create', [authMiddleware, aclMiddleware([ROLES.MEMBER])], subscriptionController.create)
+router.post('/subscription', [authMiddleware, aclMiddleware([ROLES.MEMBER])], subscriptionController.subscribe);
+router.get('/subscription', [authMiddleware, aclMiddleware([ROLES.MEMBER])], subscriptionController.memberSubscription);
+router.patch('/subscription', [authMiddleware, aclMiddleware([ROLES.MEMBER])], subscriptionController.togglePause);
+router.delete('/subscription', [authMiddleware, aclMiddleware([ROLES.MEMBER])], subscriptionController.unsubscribe)
 
 router.get('/testimonial/find-all', testimonialController.findAll);
 router.post('/testimonial/create', testimonialController.create);

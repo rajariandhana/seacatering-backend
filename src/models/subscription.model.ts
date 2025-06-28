@@ -9,6 +9,7 @@ export interface Subscription {
   allergies?:string;
   notes?:string;
   totalPrice:number;
+  paused:boolean;
   createdAt?: string;
 }
 
@@ -18,6 +19,7 @@ const SubscriptionSchema = new Schema<Subscription>({
     type: Schema.Types.ObjectId,
     ref: "User",
     required: true,
+    unique:true,
   },
   phoneNumber:{
     type: String,
@@ -42,6 +44,11 @@ const SubscriptionSchema = new Schema<Subscription>({
   notes:{
     type: String,
     required:false,
+  },
+  paused:{
+    type:Boolean,
+    required:true,
+    default:false,
   },
   totalPrice:{
     type: Number,
