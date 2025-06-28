@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import { encrypt } from "../utils/encryption";
+import { ROLES } from "../utils/constant";
 
 export interface User {
     fullName: string;
@@ -25,8 +26,8 @@ const UserSchema = new Schema<User>({
     },
     role: {
         type: Schema.Types.String,
-        enum: ["admin","member"],
-        default: "member",
+        enum: [ROLES.ADMIN,ROLES.MEMBER],
+        default: ROLES.MEMBER,
     },
 },{
     timestamps: true,
