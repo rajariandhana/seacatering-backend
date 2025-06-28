@@ -15,7 +15,7 @@ export default (req:Request, res: Response, next: NextFunction) => {
     }
 
     const [prefix, accessToken] = authorization.split(" ");
-    // if (!(prefix==="BEARER" && accessToken)){
+    // if (!(prefix==="Bearer" && accessToken)){
     //     return res.status(403).json({
     //         message: "unauthorized2",
     //         data: null
