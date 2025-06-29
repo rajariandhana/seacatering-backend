@@ -36,5 +36,7 @@ router.post('/testimonial', testimonialController.create);
 router.get('/plans', planController.index);
 router.get('/plan', planController.show);
 router.post('/plan', planController.create);
+router.patch('/plan', planController.update);
+router.delete('/plan', planController.delete);
 
 export default router;

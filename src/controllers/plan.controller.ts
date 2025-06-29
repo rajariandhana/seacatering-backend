@@ -1,6 +1,8 @@
 import { Request, Response } from "express";
 import * as Yup from "yup";
 import PlanModel, { Plan } from "../models/plan.model";
+import UserModel from "../models/user.model";
+import SubscriptionModel from "../models/subscription.model";
 
 export interface PlanForm {
   name: string;
@@ -32,6 +34,7 @@ export default {
   },
   
   async create(req: Request, res: Response) {
+    console.log("create");
     const {name,price,description,calories,suitableFor,highlights} = req.body as unknown as PlanForm;
     try {
       await planValidateSchema.validate({
@@ -62,7 +65,81 @@ export default {
       console.error("Error fetching plan:", error);
       res.status(500).json({ message: "Failed to retrieve plan" });
     }
-  }
+  },
+
+  async update(req: Request, res: Response) {
+    // ,calories,suitableFor,highlights -> edit later?
+    const {name,price,description} = req.body as unknown as PlanForm;
+    const { oldPlanName } = req.query as { oldPlanName: string };
+    console.log(req.body, req.query)
+    try {
+      await planValidateSchema.validate({
+        name,price,description
+      })
+      const updatedPlan = await PlanModel.findOneAndUpdate(
+        { name: oldPlanName },
+        { name, price, description },
+        { new: true }
+      );
+
+      if (!updatedPlan) {
+        return res.status(404).json({
+          message: "Plan not found",
+          data: null,
+        });
+      }
+
+      const subUpdateResult = await SubscriptionModel.updateMany(
+        { planName: oldPlanName },
+        { $set: { planName: name } }
+      );
+
+      res.status(200).json({
+        message: `Plan updated! ${subUpdateResult.modifiedCount} subscription(s) updated.`,
+        data: updatedPlan,
+      });
+    } catch (error) {
+      const err = error as unknown as Error;
+      res.status(400).json({
+          message: err.message,
+          data: null
+      })
+    }
+  },
+
+  async delete(req:Request, res:Response){
+    // must unsubscribe all members with plan
+    const planName = req.query.planName;
+    try {
+      const deletedPlan = await PlanModel.findOneAndDelete({name:planName});
+      if (!deletedPlan) {
+        return res.status(404).json({ message: "Plan not found" });
+      }
+      // const affectedSubscriptions = await SubscriptionModel.find({ planName });
+
+      // await SubscriptionModel.updateMany(
+      //   { planName },
+      //   {
+      //     $set: {
+      //       planName: "",
+      //       mealType: [],
+      //       deliveryDays: [],
+      //       totalPrice: 0,
+      //       paused: true,
+      //     },
+      //     $unset: {
+      //       allergies: "",
+      //       notes: "",
+      //     },
+      //   }
+      // );
+      await SubscriptionModel.deleteMany({ planName });
+      res.status(200).json(deletedPlan);
+    } catch (error) {
+      console.error("Error deleting plan:", error);
+      res.status(500).json({ message: "Failed to delete plan" });
+    }
+  },
 };
 
 /**
