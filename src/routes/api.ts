@@ -21,15 +21,16 @@ router.post('/auth/login', authController.login);
 router.get('/auth/me', authMiddleware, authController.me);
 
 // router.post('/subscription/create', subscriptionController.create);
-router.post('/subscription', [authMiddleware, aclMiddleware([ROLES.MEMBER])], subscriptionController.subscribe);
-router.get('/subscription', [authMiddleware, aclMiddleware([ROLES.MEMBER])], subscriptionController.memberSubscription);
+router.post('/subscription', [authMiddleware, aclMiddleware([ROLES.MEMBER])], subscriptionController.create);
+router.get('/subscription', [authMiddleware, aclMiddleware([ROLES.MEMBER])], subscriptionController.show);
 router.patch('/subscription', [authMiddleware, aclMiddleware([ROLES.MEMBER])], subscriptionController.togglePause);
-router.delete('/subscription', [authMiddleware, aclMiddleware([ROLES.MEMBER])], subscriptionController.unsubscribe)
+router.delete('/subscription', [authMiddleware, aclMiddleware([ROLES.MEMBER])], subscriptionController.delete)
 
-router.get('/testimonial/find-all', testimonialController.findAll);
-router.post('/testimonial/create', testimonialController.create);
+router.get('/testimonials', testimonialController.index);
+router.post('/testimonial', testimonialController.create);
 
-router.get('/plan/find-all', planController.findAll);
-router.post('/plan/create', planController.create);
+router.get('/plans', planController.index);
+router.get('/plan', planController.show);
+router.post('/plan', planController.create);
 
 export default router;

@@ -3,7 +3,7 @@ import mongoose from "mongoose";
 export interface Subscription {
   userId: mongoose.Types.ObjectId;
   phoneNumber:string;
-  planKey:string;
+  planName:string;
   mealType:string[];
   deliveryDays:string[];
   allergies?:string;
@@ -25,7 +25,7 @@ const SubscriptionSchema = new Schema<Subscription>({
     type: String,
     required:true,
   },
-  planKey:{
+  planName:{
     type: String,
     required:true,
   },

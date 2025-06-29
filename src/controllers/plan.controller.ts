@@ -1,9 +1,8 @@
 import { Request, Response } from "express";
 import * as Yup from "yup";
-import PlanModel from "../models/plan.model";
+import PlanModel, { Plan } from "../models/plan.model";
 
 export interface PlanForm {
-  key: string;
   name: string;
   price: number;
   description?: string;
@@ -13,7 +12,6 @@ export interface PlanForm {
 }
 
 const planValidateSchema=Yup.object({
-  key:Yup.string().required(),
   name:Yup.string().required(),
   price:Yup.number().positive().integer().required(),
   description:Yup.string().optional(),
@@ -23,7 +21,7 @@ const planValidateSchema=Yup.object({
 })
 
 export default {
-  async findAll(req: Request, res: Response) {
+  async index(req: Request, res: Response) {
     try {
       const plans = await PlanModel.find();
       res.status(200).json(plans);
@@ -34,13 +32,13 @@ export default {
   },
   
   async create(req: Request, res: Response) {
-    const {key,name,price,description,calories,suitableFor,highlights} = req.body as unknown as PlanForm;
+    const {name,price,description,calories,suitableFor,highlights} = req.body as unknown as PlanForm;
     try {
       await planValidateSchema.validate({
-        key,name,price,description,calories,suitableFor,highlights
+        name,price,description,calories,suitableFor,highlights
       })
       const result = await PlanModel.create({
-        key,name,price,description,calories,suitableFor,highlights
+        name,price,description,calories,suitableFor,highlights
       });
       res.status(200).json({
         message:'Plan created!',
@@ -53,6 +51,18 @@ export default {
           data: null
       })
     }
+  },
+
+  async show(req:Request, res:Response){
+    const name = req.query.name;
+    console.log(name)
+    try {
+      const plan = await PlanModel.findOne({name:name});
+      res.status(200).json(plan);
+    } catch (error) {
+      console.error("Error fetching plan:", error);
+      res.status(500).json({ message: "Failed to retrieve plan" });
+    }
   }
 };
 
@@ -62,7 +72,6 @@ export default {
  */
 const basicPlans:PlanForm[]=[
   {
-    "key": "diet",
     "name": "Diet",
     "price": 30000,
     "description": "A light and balanced option designed to support weight management and healthy eating habits. Ideal for those watching their calorie intake without compromising on taste.",
@@ -71,7 +80,6 @@ const basicPlans:PlanForm[]=[
     "highlights":["calorie-controlled", "low-fat", "high-fiber"]
   },
   {
-    "key": "protein",
     "name": "Protein",
     "price": 40000,
     "description": "Perfect for active individuals and fitness enthusiasts, this plan is packed with high-quality protein sources to help build and maintain muscle.",
@@ -80,7 +88,6 @@ const basicPlans:PlanForm[]=[
     "highlights":["high-protein", "energy-dense", "performance-focused"]
   },
   {
-    "key": "royal",
     "name": "Royal",
     "price": 60000,
     "description": "Our premium offering featuring gourmet-style meals made with top-tier ingredients. Great for those who want the healthiest, tastiest, and most luxurious meal experience.",

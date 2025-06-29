@@ -1,7 +1,6 @@
 import mongoose from "mongoose";
 
 export interface Plan {
-  key: string;
   name: string;
   price: number;
   description?: string;
@@ -12,14 +11,10 @@ export interface Plan {
 
 const Schema = mongoose.Schema;
 const PlanSchema = new Schema<Plan>({
-  key:{
-    type: String,
-    required:true,
-    unique:true,
-  },
   name:{
     type: String,
     required:true,
+    unique:true,
   },
   price:{
     type: Number,

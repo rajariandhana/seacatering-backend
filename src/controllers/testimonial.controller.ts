@@ -16,7 +16,7 @@ const testimonialValidateSchema =Yup.object({
 })
 
 export default {
-  async findAll(req: Request, res: Response) {
+  async index(req: Request, res: Response) {
     try {
       const testimonials = await TestimonialModel.find();
       res.status(200).json(testimonials);

@@ -1,13 +1,14 @@
 import { Request, Response } from "express";
 import * as Yup from "yup";
-import SubscriptionModel from "../models/subscription.model";
+import SubscriptionModel, { Subscription } from "../models/subscription.model";
 import { IReqUser } from "../middleware/auth.middleware";
 import UserModel from "../models/user.model";
 import { ROLES } from "../utils/constant";
+import PlanModel from "../models/plan.model";
 
 type SubscriptionForm = {
   phoneNumber:string;
-  planKey:string;
+  planName:string;
   mealType:string[];
   deliveryDays:string[];
   allergies?:string;
@@ -15,55 +16,40 @@ type SubscriptionForm = {
 }
 
 const mealType = [
-  'breakfast','lunch','dinner'
+  'Breakfast','Lunch','Dinner'
 ];
 
 const validWeekdays = [
-  'monday',
-  'tuesday',
-  'wednesday',
-  'thursday',
-  'friday',
-  'saturday',
-  'sunday',
+  'Monday',
+  'Tuesday',
+  'Wednesday',
+  'Thursday',
+  'Friday',
+  'Saturday',
+  'Sunday',
 ];
 
 const subscriptionValidateSchema=Yup.object({
   phoneNumber:Yup.string().matches(/^\d+$/).required(),
-  planKey:Yup.string().required(),
+  planName:Yup.string().required(),
   mealType: Yup.array().of(Yup.string().oneOf(mealType, 'Invalid meal type')).min(1).max(3).required(),
   deliveryDays: Yup.array().of(Yup.string().oneOf(validWeekdays, 'Invalid day')).min(1).max(7).required(),
   allergies:Yup.string().optional(),
   notes:Yup.string().optional()
 })
 
-const plans=[
-  {
-    key: 'diet',
-    price: 30000,
-  },
-  {
-    key: 'protein',
-    price: 40000,
-  },
-  {
-    key: 'royal',
-    price: 60000,
-  }
-];
-
 export default {
-  async subscribe(req:IReqUser, res:Response){
-    const {phoneNumber,planKey,mealType,deliveryDays,allergies,notes} = req.body as unknown as SubscriptionForm;
+  async create(req:IReqUser, res:Response){
+    const {phoneNumber,planName,mealType,deliveryDays,allergies,notes} = req.body as unknown as SubscriptionForm;
     try {
-      // console.log(phoneNumber,planKey,mealType,deliveryDays,allergies,notes);
+      // console.log(phoneNumber,planName,mealType,deliveryDays,allergies,notes);
       await subscriptionValidateSchema.validate({
-        phoneNumber,planKey,mealType,deliveryDays,allergies,notes
+        phoneNumber,planName,mealType,deliveryDays,allergies,notes
       })
 
-      const plan = plans.find(p=>p.key===planKey);
+      const plan = await PlanModel.findOne({name:planName});
       if(!plan){
-        return res.status(400).json({ error: 'Invalid planKey' });
+        return res.status(400).json({ error: 'Invalid planName' });
       }
       const totalPrice = plan.price * mealType.length * deliveryDays.length * 4.3;
 
@@ -81,20 +67,19 @@ export default {
       if(user.subscriptionId){
         await SubscriptionModel.findByIdAndDelete(user.subscriptionId);
       }
-
       if (user.role !== ROLES.MEMBER) {
         return res.status(403).json({ message: 'Only members can subscribe.' });
       }
-
+      
       const subscription = await SubscriptionModel.create({
-        userId, phoneNumber,planKey,mealType,deliveryDays,allergies,notes, totalPrice
+        userId, phoneNumber,planName,mealType,deliveryDays,allergies,notes, totalPrice
       });
 
       await UserModel.findByIdAndUpdate(userId,{
         subscriptionId: subscription._id
       })
       
-      // console.log("You have subscribed!")
+      console.log("You have subscribed!")
       res.status(200).json({
         message:'You have subscribed!',
         data: subscription
@@ -108,7 +93,7 @@ export default {
     }
   },
 
-  async memberSubscription(req:IReqUser, res:Response){
+  async show(req:IReqUser, res:Response){
     const userId = req.user?.id;
     if (!userId) {
         return res.status(401).json({ message: 'Unauthorized. User ID not found.' });
@@ -127,6 +112,9 @@ export default {
             data: null,
         });
     }
+
+    // const subscription = user.subscriptionId as unknown as Subscription;
+    // const plan = await PlanModel.findOne({key: subscription.planName});
 
     res.status(200).json({
         message: "User's subscription found.",
@@ -168,7 +156,7 @@ export default {
     });
   },
 
-  async unsubscribe(req: IReqUser, res: Response) {
+  async delete(req: IReqUser, res: Response) {
     const userId = req.user?.id;
     if (!userId) {
       return res.status(401).json({ message: "Unauthorized. User ID not found." });
