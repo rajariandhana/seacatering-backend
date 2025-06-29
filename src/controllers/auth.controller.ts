@@ -130,7 +130,7 @@ export default {
         try {
             const user = req.user;
             const result = await UserModel.findById(user?.id);
-            console.log("found",result);
+            // console.log("hehe");
 
             res.status(200).json({
                 message:"Success get user profile",

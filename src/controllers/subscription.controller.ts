@@ -39,6 +39,22 @@ const subscriptionValidateSchema=Yup.object({
 })
 
 export default {
+  async index(req: Request, res: Response) {
+    try {
+        const subscriptions = await SubscriptionModel.find();
+        res.status(200).json({
+            message:"Success get all subscriptions",
+            data: subscriptions
+        });
+    } catch (error) {
+        const err = error as unknown as Error;
+        res.status(400).json({
+            message: err.message,
+            data: null
+        })
+    }
+  },
+
   async create(req:IReqUser, res:Response){
     const {phoneNumber,planName,mealType,deliveryDays,allergies,notes} = req.body as unknown as SubscriptionForm;
     try {
@@ -79,7 +95,7 @@ export default {
         subscriptionId: subscription._id
       })
       
-      console.log("You have subscribed!")
+      // console.log("You have subscribed!")
       res.status(200).json({
         message:'You have subscribed!',
         data: subscription

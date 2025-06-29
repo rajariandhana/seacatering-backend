@@ -55,7 +55,6 @@ export default {
 
   async show(req:Request, res:Response){
     const name = req.query.name;
-    console.log(name)
     try {
       const plan = await PlanModel.findOne({name:name});
       res.status(200).json(plan);

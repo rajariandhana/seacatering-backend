@@ -11,6 +11,7 @@ import planController from '../controllers/plan.controller';
 import { ROLES } from '../utils/constant';
 import authMiddleware from '../middleware/auth.middleware';
 import aclMiddleware from '../middleware/acl.middleware';
+import memberController from '../controllers/member.controller';
 
 const router = express.Router();
 
@@ -20,7 +21,10 @@ router.post('/auth/register', authController.register);
 router.post('/auth/login', authController.login);
 router.get('/auth/me', authMiddleware, authController.me);
 
-// router.post('/subscription/create', subscriptionController.create);
+router.get('/members', [authMiddleware, aclMiddleware([ROLES.ADMIN])], memberController.index);
+router.get('/member/subscription', [authMiddleware, aclMiddleware([ROLES.ADMIN])], memberController.subscription);
+
+router.get('/subscriptions', [authMiddleware, aclMiddleware([ROLES.ADMIN])], subscriptionController.index);
 router.post('/subscription', [authMiddleware, aclMiddleware([ROLES.MEMBER])], subscriptionController.create);
 router.get('/subscription', [authMiddleware, aclMiddleware([ROLES.MEMBER])], subscriptionController.show);
 router.patch('/subscription', [authMiddleware, aclMiddleware([ROLES.MEMBER])], subscriptionController.togglePause);
