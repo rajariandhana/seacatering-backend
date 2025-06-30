@@ -160,7 +160,19 @@ export default {
             }
 
             if (email !== undefined) {
-                dynamicSchemaShape.email = Yup.string().email("Invalid email").required("Email is required");
+                dynamicSchemaShape.email = Yup.string()
+                    .email("Invalid email")
+                    .required("Email is required");
+
+                // Check if email is taken by another user
+                const existingUser = await UserModel.findOne({ email });
+                if (existingUser && existingUser._id !== userId) {
+                    return res.status(400).json({
+                    message: "Email is already in use",
+                    data: null,
+                    });
+                }
+
                 updates.email = email;
             }
 
