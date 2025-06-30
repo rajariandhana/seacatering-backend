@@ -34,7 +34,7 @@ export default {
   },
   
   async create(req: Request, res: Response) {
-    console.log("create");
+    // console.log("create");
     const {name,price,description,calories,suitableFor,highlights} = req.body as unknown as PlanForm;
     try {
       await planValidateSchema.validate({
@@ -71,7 +71,7 @@ export default {
     // ,calories,suitableFor,highlights -> edit later?
     const {name,price,description} = req.body as unknown as PlanForm;
     const { oldPlanName } = req.query as { oldPlanName: string };
-    console.log(req.body, req.query)
+    // console.log(req.body, req.query)
     try {
       await planValidateSchema.validate({
         name,price,description

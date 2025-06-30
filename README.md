@@ -13,3 +13,5 @@ user 1:1 subscription
 when admins change a price, it should recalculate all subscriptions and modify the price
 
 destroy plan: unsubscribe users with that plan
+
+seeder

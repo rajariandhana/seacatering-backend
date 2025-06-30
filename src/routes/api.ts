@@ -20,6 +20,7 @@ router.get('/dummy', dummyController.dummy);
 router.post('/auth/register', authController.register);
 router.post('/auth/login', authController.login);
 router.get('/auth/me', authMiddleware, authController.me);
+router.patch('/auth', authMiddleware, authController.update);
 
 router.get('/members', [authMiddleware, aclMiddleware([ROLES.ADMIN])], memberController.index);
 router.get('/member/subscription', [authMiddleware, aclMiddleware([ROLES.ADMIN])], memberController.subscription);
