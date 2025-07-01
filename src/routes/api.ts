@@ -28,7 +28,7 @@ router.get('/member/subscription', [authMiddleware, aclMiddleware([ROLES.ADMIN])
 router.get('/subscriptions', [authMiddleware, aclMiddleware([ROLES.ADMIN])], subscriptionController.index);
 router.post('/subscription', [authMiddleware, aclMiddleware([ROLES.MEMBER])], subscriptionController.create);
 router.get('/subscription', [authMiddleware, aclMiddleware([ROLES.MEMBER])], subscriptionController.show);
-router.patch('/subscription', [authMiddleware, aclMiddleware([ROLES.MEMBER])], subscriptionController.togglePause);
+router.patch('/subscription', [authMiddleware, aclMiddleware([ROLES.MEMBER])], subscriptionController.pause);
 router.delete('/subscription', [authMiddleware, aclMiddleware([ROLES.MEMBER])], subscriptionController.delete)
 
 router.get('/testimonials', testimonialController.index);

@@ -203,9 +203,25 @@ export default {
                 data: result,
             });
         } catch (error: any) {
+            if (error.name === "ValidationError") {
+                const fieldErrors: Record<string, string> = {};
+
+                error.inner.forEach((err: any) => {
+                if (err.path) {
+                    fieldErrors[err.path] = err.message;
+                }
+                });
+
+                return res.status(400).json({
+                message: "Validation failed",
+                errors: fieldErrors, // structured by field
+                });
+            }
+
+            // Fallback for other types of errors
             return res.status(400).json({
-                message: error.message,
-                data: null,
+                message: error.message || "Update failed",
+                errors: null,
             });
         }
     }

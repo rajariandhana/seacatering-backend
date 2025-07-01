@@ -13,6 +13,8 @@ type SubscriptionForm = {
   deliveryDays:string[];
   allergies?:string;
   notes?:string;
+  pauseStart:Date|null;
+  pauseEnd:Date|null;
 }
 
 const mealType = [
@@ -35,7 +37,9 @@ const subscriptionValidateSchema=Yup.object({
   mealType: Yup.array().of(Yup.string().oneOf(mealType, 'Invalid meal type')).min(1).max(3).required(),
   deliveryDays: Yup.array().of(Yup.string().oneOf(validWeekdays, 'Invalid day')).min(1).max(7).required(),
   allergies:Yup.string().optional(),
-  notes:Yup.string().optional()
+  notes:Yup.string().optional(),
+  pauseStart: Yup.date().nullable().notRequired(),
+  pauseEnd: Yup.date().nullable().notRequired()
 })
 
 export default {
@@ -56,11 +60,13 @@ export default {
   },
 
   async create(req:IReqUser, res:Response){
-    const {phoneNumber,planName,mealType,deliveryDays,allergies,notes} = req.body as unknown as SubscriptionForm;
+    console.log(req.body)
+    const {phoneNumber,planName,mealType,deliveryDays,allergies,notes,pauseStart,pauseEnd} = req.body as unknown as SubscriptionForm;
+    // console.log(req.body as unknown as SubscriptionForm)
     try {
       // console.log(phoneNumber,planName,mealType,deliveryDays,allergies,notes);
       await subscriptionValidateSchema.validate({
-        phoneNumber,planName,mealType,deliveryDays,allergies,notes
+        phoneNumber,planName,mealType,deliveryDays,allergies,notes,pauseStart,pauseEnd
       })
 
       const plan = await PlanModel.findOne({name:planName});
@@ -88,7 +94,7 @@ export default {
       }
       
       const subscription = await SubscriptionModel.create({
-        userId, phoneNumber,planName,mealType,deliveryDays,allergies,notes, totalPrice
+        userId, phoneNumber,planName,mealType,deliveryDays,allergies,notes, totalPrice,pauseStart,pauseEnd
       });
 
       await UserModel.findByIdAndUpdate(userId,{
@@ -102,6 +108,7 @@ export default {
       })
     } catch (error) {
       const err = error as unknown as Error;
+      console.log(err.message)
       res.status(400).json({
           message: err.message,
           data: null
@@ -138,7 +145,10 @@ export default {
     });
   },
 
-  async togglePause(req:IReqUser, res:Response){
+  async pause(req:IReqUser, res:Response){
+    const {pauseStart, pauseEnd} = req.body;
+    // console.log(pauseStart,pauseEnd)
+    // return res.status(200).json();
     const userId = req.user?.id;
     if (!userId) {
         return res.status(401).json({ message: 'Unauthorized. User ID not found.' });
@@ -163,11 +173,22 @@ export default {
       return res.status(404).json({ message: "Subscription not found." });
     }
 
-    subscription.paused = !subscription.paused;
-    await subscription.save();
+    const startDate = new Date(pauseStart);
+    const endDate = new Date(pauseEnd);
+    if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
+      return res.status(400).json({ message: 'Invalid date format.' });
+    }
 
+    if (startDate >= endDate) {
+      return res.status(400).json({ message: 'Start date cannot be after or equal to end date.' });
+    }
+
+    subscription.pauseStart = pauseStart;
+    subscription.pauseEnd = pauseEnd;
+    await subscription.save();
+    // console.log("Set pause dates")c
     return res.status(200).json({
-      message: `Subscription is now ${subscription.paused ? "paused" : "active"}.`,
+      message: "Pause date are set",
       data: subscription,
     });
   },

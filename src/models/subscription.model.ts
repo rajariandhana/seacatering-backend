@@ -9,7 +9,8 @@ export interface Subscription {
   allergies?:string;
   notes?:string;
   totalPrice:number;
-  paused:boolean;
+  pauseStart:Date|null;
+  pauseEnd:Date|null;
   createdAt?: string;
 }
 
@@ -45,14 +46,18 @@ const SubscriptionSchema = new Schema<Subscription>({
     type: String,
     required:false,
   },
-  paused:{
-    type:Boolean,
-    required:true,
-    default:false,
+  pauseStart: {
+    type: Date,
+    default: null,
+  },
+  pauseEnd: {
+    type: Date,
+    default: null,
   },
   totalPrice:{
     type: Number,
     required:true,
+    default:null
   },
 },{
   timestamps: true,
