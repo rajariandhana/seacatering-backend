@@ -21,7 +21,7 @@ type TLogin = {
 
 const registerValidateSchema = Yup.object({
     fullName: Yup.string().required(),
-    email: Yup.string().required(),
+    email: Yup.string().email().required(),
     password: Yup.string()
         .required()
         .min(8, "Password must be at least 8 characters")
@@ -130,7 +130,7 @@ export default {
         try {
             const user = req.user;
             const result = await UserModel.findById(user?.id);
-            console.log("found",result);
+            // console.log("hehe");
 
             res.status(200).json({
                 message:"Success get user profile",
@@ -142,6 +142,87 @@ export default {
                 message: err.message,
                 data: null
             })
+        }
+    },
+
+    async update(req: IReqUser, res: Response) {
+        const { fullName, email, password, confirmPassword } = req.body;
+        const updates: any = {};
+        const userId = req.user?.id;
+
+        try {
+            // Build dynamic schema
+            const dynamicSchemaShape: Record<string, Yup.AnySchema> = {};
+
+            if (fullName !== undefined) {
+                dynamicSchemaShape.fullName = Yup.string().required("Full name is required");
+                updates.fullName = fullName;
+            }
+
+            if (email !== undefined) {
+                dynamicSchemaShape.email = Yup.string()
+                    .email("Invalid email")
+                    .required("Email is required");
+
+                // Check if email is taken by another user
+                const existingUser = await UserModel.findOne({ email });
+                if (existingUser && existingUser._id !== userId) {
+                    return res.status(400).json({
+                    message: "Email is already in use",
+                    data: null,
+                    });
+                }
+
+                updates.email = email;
+            }
+
+            if (password !== undefined || confirmPassword !== undefined) {
+                dynamicSchemaShape.password = Yup.string()
+                    .required("Password is required")
+                    .min(8, "Password must be at least 8 characters")
+                    .matches(/[A-Z]/, "Must contain an uppercase letter")
+                    .matches(/\d/, "Must contain a number")
+                    .matches(/[!@#$%^&*(),.?":{}|<>]/, "Must contain a special character");
+
+                dynamicSchemaShape.confirmPassword = Yup.string()
+                    .required("Confirm password is required")
+                    .oneOf([Yup.ref("password"), ""], "Passwords do not match");
+
+                updates.password = encrypt(password); // Encrypt only if password is being updated
+            }
+
+            const dynamicSchema = Yup.object().shape(dynamicSchemaShape);
+
+            // Validate only the fields being updated
+            await dynamicSchema.validate(req.body, { abortEarly: false });
+
+            const result = await UserModel.findByIdAndUpdate(userId, updates, { new: true });
+
+            return res.status(200).json({
+                message: "User updated successfully",
+                data: result,
+            });
+        } catch (error: any) {
+            if (error.name === "ValidationError") {
+                const fieldErrors: Record<string, string> = {};
+
+                error.inner.forEach((err: any) => {
+                if (err.path) {
+                    fieldErrors[err.path] = err.message;
+                }
+                });
+
+                return res.status(400).json({
+                message: "Validation failed",
+                errors: fieldErrors, // structured by field
+                });
+            }
+
+            // Fallback for other types of errors
+            return res.status(400).json({
+                message: error.message || "Update failed",
+                errors: null,
+            });
         }
     }
 };

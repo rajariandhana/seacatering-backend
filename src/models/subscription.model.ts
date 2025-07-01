@@ -3,12 +3,14 @@ import mongoose from "mongoose";
 export interface Subscription {
   userId: mongoose.Types.ObjectId;
   phoneNumber:string;
-  planKey:string;
+  planName:string;
   mealType:string[];
   deliveryDays:string[];
   allergies?:string;
   notes?:string;
   totalPrice:number;
+  pauseStart:Date|null;
+  pauseEnd:Date|null;
   createdAt?: string;
 }
 
@@ -18,12 +20,13 @@ const SubscriptionSchema = new Schema<Subscription>({
     type: Schema.Types.ObjectId,
     ref: "User",
     required: true,
+    unique:true,
   },
   phoneNumber:{
     type: String,
     required:true,
   },
-  planKey:{
+  planName:{
     type: String,
     required:true,
   },
@@ -43,9 +46,18 @@ const SubscriptionSchema = new Schema<Subscription>({
     type: String,
     required:false,
   },
+  pauseStart: {
+    type: Date,
+    default: null,
+  },
+  pauseEnd: {
+    type: Date,
+    default: null,
+  },
   totalPrice:{
     type: Number,
     required:true,
+    default:null
   },
 },{
   timestamps: true,
