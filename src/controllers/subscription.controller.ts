@@ -17,11 +17,11 @@ type SubscriptionForm = {
   pauseEnd:Date|null;
 }
 
-const mealType = [
+export const mealType = [
   'Breakfast','Lunch','Dinner'
 ];
 
-const validWeekdays = [
+export const validWeekdays = [
   'Monday',
   'Tuesday',
   'Wednesday',
@@ -30,6 +30,10 @@ const validWeekdays = [
   'Saturday',
   'Sunday',
 ];
+
+export const calculateTotalPrice=(planPrice:number, mealType:string[], deliveryDays:string[])=>{
+  return 4.3 * planPrice * mealType.length * deliveryDays.length;
+}
 
 const subscriptionValidateSchema=Yup.object({
   phoneNumber:Yup.string().matches(/^\d+$/).required(),
@@ -73,7 +77,7 @@ export default {
       if(!plan){
         return res.status(400).json({ error: 'Invalid planName' });
       }
-      const totalPrice = plan.price * mealType.length * deliveryDays.length * 4.3;
+      const totalPrice = calculateTotalPrice(plan.price, mealType, deliveryDays);
 
       // console.log(req.user);
       const userId = req.user?.id;
