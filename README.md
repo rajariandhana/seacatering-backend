@@ -1,17 +1,15 @@
-README
-```sh
-npm i typescript@5.4.5
+# SEA Catering Backend
+Try the website [here](https://seacatering.vercel.app)
 
-npm i express@4.19.2
-npm i @types/express@4.17.21
-```
+For frontend repo go to [Repo](https://github.com/rajariandhana/seacatering)
 
-stupid ass dont forget when deploying in vercel, go to mongodb cluster and set allow ip from any (or better put the frontend/backend ip/domain idk havent tried this one)
+## About The Stack
+The backend uses [expressjs](https://expressjs.com) and [Node.js](https://nodejs.org) which connects the frontend with the [MongoDB](https://www.mongodb.com) database. 
 
-user 1:1 subscription
-
-when admins change a price, it should recalculate all subscriptions and modify the price
-
-destroy plan: unsubscribe users with that plan
-
-seeder
+## Project Structure
+- `/src/controllers` - does the logic such as validating requests, interacting with database, and sending appropriate response to frontend
+- `/src/middleware` - validates token to ensure only authenticated user can use logged features
+- `/src/models` - defines backend and database schema for tables
+- `/src/routes` - define API routes with their controller method as well as which roles can access certain routes
+- `/src/seeders` - seeds the table with dummy data using faker
+- `/src/utils` - utility methods
