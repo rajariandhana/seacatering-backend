@@ -49,7 +49,7 @@ const subscriptionValidateSchema=Yup.object({
 export default {
   async index(req: Request, res: Response) {
     try {
-        const subscriptions = await SubscriptionModel.find();
+        const subscriptions = await SubscriptionModel.find().populate('userId');
         res.status(200).json({
             message:"Success get all subscriptions",
             data: subscriptions

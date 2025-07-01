@@ -25,17 +25,24 @@ const allergies = [
   "Sesame",
 ];
 
-function pickRandomItems<T>(list: T[]): T[] {
-  const count = Math.floor(Math.random() * list.length) + 1;
+function pickRandomItems<T>(items: T[]): T[] {
+  let newItems: T[] = [];
 
-  const shuffled = list.slice();
-  for (let i = shuffled.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  let attempts = 0;
+  const maxAttempts = 10;
+
+  while (newItems.length === 0 && attempts < maxAttempts) {
+    newItems = [];
+    for (let i = 0; i < items.length; i++) {
+      if (Math.random() < 0.5) continue;
+      newItems.push(items[i]);
+    }
+    attempts++;
   }
 
-  return shuffled.slice(0, count);
+  return newItems;
 }
+
 
 export async function seedSubscriptions(faker:Faker) {
   let n=0;
