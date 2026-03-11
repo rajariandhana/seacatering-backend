@@ -1,10 +1,10 @@
 import mongoose from "mongoose";
-import { DATABASE_URL } from "./env";
+import { DATABASE_URL, DATABASE_NAME } from "./env";
 
 const connect = async () => {
     try {
         await mongoose.connect(DATABASE_URL, {
-            dbName: "db-seacatering",
+            dbName: DATABASE_NAME,
         });
         return Promise.resolve("Database connected!");
     } catch (error) {
